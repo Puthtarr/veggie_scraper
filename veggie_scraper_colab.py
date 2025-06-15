@@ -13,12 +13,12 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 
 # 📢 ติดตั้งไลบรารี (รันครั้งเดียวพอ)
-# subprocess.run(["apt", "update"])
-# subprocess.run(["apt", "install", "-y", "chromium-browser", "chromium-chromedriver"])
-# subprocess.run(["cp", "/usr/lib/chromium-browser/chromedriver", "/usr/bin"])
-# subprocess.run(["pip", "install", "selenium"])
-# subprocess.run(["pip", "install", "webdriver-manager"])
-# subprocess.run(["pip", "install", "beautifulsoup4"])
+subprocess.run(["apt", "update"])
+subprocess.run(["apt", "install", "-y", "chromium-browser", "chromium-chromedriver"])
+subprocess.run(["cp", "/usr/lib/chromium-browser/chromedriver", "/usr/bin"])
+subprocess.run(["pip", "install", "selenium"])
+subprocess.run(["pip", "install", "webdriver-manager"])
+subprocess.run(["pip", "install", "beautifulsoup4"])
 
 # ⚛️ ตั้งค่า ChromeDriver สำหรับ headless (สำหรับ Colab)
 chrome_options = Options()
