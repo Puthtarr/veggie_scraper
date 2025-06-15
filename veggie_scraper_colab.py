@@ -1,62 +1,98 @@
-import time
-import pandas as pd
-from bs4 import BeautifulSoup
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.chrome.options import Options
+# -*- coding: utf-8 -*-
 
-# ตั้งค่า Chrome สำหรับ Colab
+from bs4 import BeautifulSoup
+import subprocess
+import time
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from datetime import datetime
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
+
+# 📢 ติดตั้งไลบรารี (รันครั้งเดียวพอ)
+# subprocess.run(["apt", "update"])
+# subprocess.run(["apt", "install", "-y", "chromium-browser", "chromium-chromedriver"])
+# subprocess.run(["cp", "/usr/lib/chromium-browser/chromedriver", "/usr/bin"])
+# subprocess.run(["pip", "install", "selenium"])
+# subprocess.run(["pip", "install", "webdriver-manager"])
+# subprocess.run(["pip", "install", "beautifulsoup4"])
+
+# ⚛️ ตั้งค่า ChromeDriver สำหรับ headless (สำหรับ Colab)
 chrome_options = Options()
 chrome_options.add_argument("--headless")
 chrome_options.add_argument("--no-sandbox")
 chrome_options.add_argument("--disable-dev-shm-usage")
-chrome_options.binary_location = "/usr/bin/chromium-browser"
 
-from selenium.webdriver.chrome.service import Service
-driver = webdriver.Chrome(service=Service("/usr/bin/chromedriver"), options=chrome_options)
+# 🚀 เปิด browser
+service = Service(ChromeDriverManager().install())
+driver = webdriver.Chrome(service=service, options=chrome_options)
 
-# เปิดเว็บ
-driver.get("https://www.simummuangmarket.com/product/69")
+# 🌽 ลิงก์สินค้าจากตลาดสี่มุมเมือง
+products = {
+    "แครอทจีน": "https://www.simummuangmarket.com/product/2678",
+    "แครอทไทย": "https://www.simummuangmarket.com/product/2739",
+    "ผักกาดขาว(ลุ้ย)": "https://www.simummuangmarket.com/product/79",
+    "ผักกาดขาว(ลุ้ย)จีน": "https://www.simummuangmarket.com/product/2680",
+    "กรีนโอ๊ค": "https://www.simummuangmarket.com/product/2785",
+    "ผักเรดโอ๊ค": "https://www.simummuangmarket.com/product/90",
+    "กรีนคอส": "https://www.simummuangmarket.com/product/69",
+    "กะหล่ำปลี ม่วง": "https://www.simummuangmarket.com/product/71",
+    "ข้าวโพดหวานแกะเม็ด": "https://www.simummuangmarket.com/product/2694"
+}
 
-# คลิกแท็บ Past 7 Days Price
-wait = WebDriverWait(driver, 10)
-tabs = wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, "v-tabs__item")))
-for tab in tabs:
-    print("TAB TEXT:", tab.text.strip())
-    if "PAST 7 DAYS" in tab.text.upper():
-        tab.click()
-        break
+# 📋 รวบรวมผลลัพธ์
+results = []
 
-# รอให้ตารางแสดง
-time.sleep(2)
-soup = BeautifulSoup(driver.page_source, "html.parser")
-tables = soup.find_all("table", class_="search-result-table w-100")
+for name, url in products.items():
+    try:
+        driver.get(url)
+        time.sleep(2)
+        soup = BeautifulSoup(driver.page_source, "html.parser")
 
-target_table = None
-for table in tables:
-    headers = [th.text.strip().lower() for th in table.find_all("th")]
-    print("📌 ตรวจสอบ headers:", headers)
-    if any("date" in h or "วันที่" in h for h in headers):
-        target_table = table
-        break
+        # 🔍 ดึงราคา
+        price_div = soup.find("div", class_="price text-red")
+        price = price_div.find("strong").text.strip() if price_div else "ไม่มีข้อมูล"
 
+        results.append(f"{name} : {price} บาท /กก.")
+
+    except Exception as e:
+        results.append(f"{name} : ❌ error ({e.__class__.__name__})")
+
+# 🖚 ปิด browser
 driver.quit()
 
-# แปลงเป็น DataFrame
-if target_table:
-    headers = [th.text.strip() for th in target_table.find_all("th")]
-    rows = []
-    for tr in target_table.find_all("tr"):
-        cols = [td.text.strip() for td in tr.find_all("td")]
-        if cols:
-            while len(cols) < len(headers):
-                cols.append("")
-            rows.append(cols)
+# 📧 ส่งอีเมล
+gmail_user = 'tanayus.ohm1023@gmail.com'       # เปลี่ยนเป็นอีเมลของคุณ
+gmail_pass = 'kbljwzrnjbucffum'                # ใช้ App Password จาก Gmail เท่านั้น
+to_email = 'piyaphatputt01@gmail.com, tanayus.ohm1023@gmail.com'
 
-    df = pd.DataFrame(rows, columns=headers)
-    print(df)
-else:
-    print("❌ ไม่เจอตารางราคาย้อนหลัง")
+# 📅 วันที่ปัจจุบัน
+report_date = datetime.now().strftime("%d %B %Y")
+
+# 📨 เนื้อหาอีเมล
+header = f"""
+📆 รายงานวันที่: {report_date}
+📊 แหล่งข้อมูล: ตลาดสี่มุมเมือง (www.simummuangmarket.com)
+
+📋 ราคาผักวันนี้
+"""
+
+body = header + "\n" + "\n".join(results)
+print(results)
+
+msg = MIMEMultipart()
+msg['From'] = gmail_user
+msg['To'] = to_email
+msg['Subject'] = "📬 รายงานราคาผักประจำวันที่"
+msg.attach(MIMEText(body, 'plain'))
+
+try:
+    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
+        server.login(gmail_user, gmail_pass)
+        server.send_message(msg)
+        print("📨 ส่งอีเมลเรียบร้อยแล้ว")
+except Exception as e:
+    print(f"❌ Error: {e}")
