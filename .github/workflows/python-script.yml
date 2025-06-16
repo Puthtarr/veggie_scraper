@@ -2,17 +2,16 @@ name: Daily Veggie Price Report
 
 on:
   schedule:
-    - cron: "0 15 * * *"   # 22:00 เวลาไทย
+    - cron: "0 15 * * *"  # เวลาไทย 22:00
   workflow_dispatch:
 
 jobs:
   run-veggie-script:
     runs-on: ubuntu-latest
 
-    env:  # 👈 กำหนด ENV จาก Secrets
+    env:  # 👈 เอา secrets มาใส่เป็น environment variables
       GMAIL_USER: ${{ secrets.GMAIL_USER }}
       GMAIL_PASS: ${{ secrets.GMAIL_PASS }}
-      EMAIL_TO: ${{ secrets.EMAIL_TO }}
 
     steps:
       - name: Checkout code
@@ -27,5 +26,5 @@ jobs:
         run: |
           pip install -r requirements.txt
 
-      - name: Run veggie_scraper.py
-        run: python veggie_scraper.py
+      - name: Run script
+        run: python main_veggie_scraper.py
