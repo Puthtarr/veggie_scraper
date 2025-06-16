@@ -52,8 +52,8 @@ for name, url in products.items():
 driver.quit()
 
 # 📧 ส่งอีเมล
-gmail_user = "piyaphatputt01@gmail.com"
-gmail_pass = "appplxkrntoixxarmazk"
+gmail_user = os.getenv("GMAIL_USER")
+gmail_pass = os.getenv("GMAIL_PASS")
 to_email = 'mojikatiya@gmail.com, tanayus.ohm1023@gmail.com, piyaphatputt01@gmail.com'
 
 # 📅 วันที่ปัจจุบัน
