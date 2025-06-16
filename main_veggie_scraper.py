@@ -54,7 +54,7 @@ driver.quit()
 # 📧 ส่งอีเมล
 gmail_user = os.getenv("GMAIL_USER")
 gmail_pass = os.getenv("GMAIL_PASS")
-to_email = 'mojikatiya@gmail.com, tanayus.ohm1023@gmail.com'
+to_email = 'mojikatiya@gmail.com, tanayus.ohm1023@gmail.com, piyaphatputt01@gmail.com'
 
 # 📅 วันที่ปัจจุบัน
 report_date = datetime.now().strftime("%d %B %Y")
