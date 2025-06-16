@@ -43,10 +43,10 @@ for name, url in products.items():
         price_div = soup.find("div", class_="price text-red")
         price = price_div.find("strong").text.strip() if price_div else "ไม่มีข้อมูล"
 
-        results.append(f"{name} : {price} บาท /กก.")
+        results.append((name, price + " บาท /กก."))
 
     except Exception as e:
-        results.append(f"{name} : ❌ error ({e.__class__.__name__})")
+        results.append((name, f"❌ error ({e.__class__.__name__})"))
 
 # 🔚 ปิด browser
 driver.quit()
@@ -54,27 +54,40 @@ driver.quit()
 # 📧 ส่งอีเมล
 gmail_user = os.getenv("GMAIL_USER")
 gmail_pass = os.getenv("GMAIL_PASS")
-to_email = 'mojikatiya@gmail.com, tanayus.ohm1023@gmail.com, piyaphatputt01@gmail.com'
+to_email = 'piyaphatputt01@gmail.com'
 
 # 📅 วันที่ปัจจุบัน
 report_date = datetime.now().strftime("%d %B %Y")
 
-# 📨 เนื้อหาอีเมล
-header = f"""
-📆 รายงานวันที่: {report_date}
-📊 แหล่งข้อมูล: ตลาดสี่มุมเมือง (www.simummuangmarket.com)
+# ✨ สร้าง HTML Table สำหรับเนื้อหาอีเมล
+table_rows = "".join([f"<tr><td>{name}</td><td>{price}</td></tr>" for name, price in results])
 
-📋 ราคาผักวันนี้
+html_body = f"""
+<html>
+  <body>
+    <h2>📆 รายงานราคาผักประจำวันที่: {report_date}</h2>
+    <p>📊 แหล่งข้อมูล: <a href="https://www.simummuangmarket.com/">ตลาดสี่มุมเมือง</a></p>
+    <table border="1" cellpadding="6" cellspacing="0" style="border-collapse: collapse; font-family: Arial;">
+      <thead style="background-color:#f2f2f2;">
+        <tr>
+          <th>ชื่อผัก</th>
+          <th>ราคา</th>
+        </tr>
+      </thead>
+      <tbody>
+        {table_rows}
+      </tbody>
+    </table>
+  </body>
+</html>
 """
 
-body = header + "\n" + "\n".join(results)
-print(results)
-
+# 📨 สร้างและส่งอีเมล
 msg = MIMEMultipart()
 msg['From'] = gmail_user
 msg['To'] = to_email
 msg['Subject'] = "📬 รายงานราคาผักประจำวันที่"
-msg.attach(MIMEText(body, 'plain'))
+msg.attach(MIMEText(html_body, 'html'))
 
 try:
     with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
