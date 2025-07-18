@@ -2,7 +2,7 @@ name: Daily Veggie Price Report
 
 on:
   schedule:
-    - cron: "45 2 * * *"    # 👈 9:45 น. ตามเวลาไทย (UTC+7)
+    - cron: "45 1 * * *"    # 👈 9:45 น. ตามเวลาไทย (UTC+7)
   workflow_dispatch:
 
 jobs:
